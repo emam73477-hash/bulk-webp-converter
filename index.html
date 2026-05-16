@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Free client-side bulk image to WebP converter and compressor. Make your website load faster by converting JPG and PNG to WebP format instantly in your browser." />
+    <title>Bulk Image to WebP Converter & Compressor - Free Tool</title>
+
+    <!-- JSZip + FileSaver -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #60a5fa;
+        }
+
+        header p {
+            color: #9ca3af;
+        }
+
+        .panel {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            background: #0f172a;
+            color: white;
+            border-radius: 8px;
+            border: 2px dashed #475569;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .controls label {
+            flex: 1;
+            min-width: 200px;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        button {
+            background: #2563eb;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-clear { background: #ef4444; }
+        .btn-clear:hover { background: #dc2626; }
+        
+        .btn-download { background: #10b981; }
+        .btn-download:hover { background: #059669; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card img {
+            max-width: 100%;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 12px;
+            margin: 5px 0;
+            word-break: break-all;
+            color: #cbd5e1;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .actions button {
+            width: 100%;
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        .top-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* SEO Content Styling */
+        .seo-article {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 40px;
+            line-height: 1.8;
+            color: #cbd5e1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .seo-article h2 {
+            color: #60a5fa;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        .seo-article h3 {
+            color: #f8fafc;
+            margin-top: 25px;
+        }
+
+        .seo-article ul {
+            background: #0f172a;
+            padding: 20px 40px;
+            border-radius: 8px;
+        }
+
+        .seo-article li {
+            margin-bottom: 10px;
+        }
+
+        /* Monetization Banner */
+        .ad-banner {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .ad-banner a {
+            color: #38bdf8;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .ad-banner a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .top-actions button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🖼️ Bulk Image → WebP Converter</h1>
+        <p>Fast, Secure, and 100% Client-Side. No images are uploaded to any server.</p>
+    </header>
+
+    <!-- مكان إعلان لشركة الإعلانات (Monetag / Adsterra) -->
+    <!-- يمكنك وضع كود البانر الإعلاني هنا لاحقاً -->
+
+    <div class="panel">
+        <input type="file" id="fileInput" accept="image/png, image/jpeg" multiple>
+
+        <div class="controls">
+            <label>
+                Compression Quality: <span id="qualityVal" style="color: #60a5fa;">0.8</span>
+                <input type="range" id="quality" min="0.1" max="1" step="0.1" value="0.8">
+            </label>
+
+            <div class="top-actions">
+                <button onclick="convertImages()">⚙️ Convert to WebP</button>
+                <button class="btn-download" onclick="downloadAllZip()">📦 Download All (ZIP)</button>
+                <button class="btn-clear" onclick="clearAll()">🗑️ Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مكان التسويق بالعمولة (Affiliate Link) -->
+    <div class="ad-banner">
+        🚀 Want your website to load 10x faster? 
+        <a href="YOUR_AFFILIATE_LINK_HERE" target="_blank">Get Premium Fast Web Hosting today!</a>
+    </div>
+
+    <div class="grid" id="preview"></div>
+
+    <!-- SEO Content Section (Crucial for Google Ranking) -->
+    <article class="seo-article">
+        <h2>Why Convert Images to WebP?</h2> 
+        
+        <h3>What is WebP and why it matters</h3> 
+        <p>WebP is a modern image format developed by Google that provides superior compression for images on the web. Compared to traditional formats like JPEG and PNG, WebP significantly reduces file size while maintaining high visual quality. This makes it one of the most effective formats for improving website performance, especially in an era where speed and user experience directly impact SEO rankings.</p> 
+        
+        <h3>Smaller file sizes without losing quality</h3> 
+        <p>One of the biggest advantages of WebP is its ability to compress images more efficiently than older formats. On average, WebP images are 25% to 35% smaller than JPEG images and up to 80% smaller than PNG files. Despite the reduction in size, WebP supports both lossy and lossless compression, meaning developers can choose between maximum quality or maximum performance depending on the use case.</p>
+        <p>This balance between quality and compression is especially useful for websites that rely heavily on visuals, such as e-commerce stores, portfolios, and blogs.</p>
+
+        <h3>Faster website loading speed</h3> 
+        <p>Page speed is a major ranking factor in search engines like Google. Large image files are one of the most common reasons for slow-loading websites. By converting images to WebP, websites can dramatically reduce total page weight, resulting in faster load times.</p>
+        <p>Faster websites not only improve SEO rankings but also enhance user experience. Studies show that users are more likely to leave a site if it takes more than a few seconds to load. WebP helps solve this problem by optimizing image delivery.</p>
+
+        <h3>Better mobile performance</h3> 
+        <p>Mobile users often have slower internet connections compared to desktop users. WebP helps ensure that images load quickly even on limited bandwidth. This is especially important for mobile-first indexing, where Google evaluates the mobile version of a site for ranking purposes.</p>
+
+        <h3>Transparency and animation support</h3> 
+        <p>Unlike JPEG, WebP supports transparency (like PNG) and even animation (like GIF), but with much smaller file sizes. This makes it a versatile replacement for multiple image formats, simplifying asset management for developers and designers.</p>
+
+        <h2>How to Compress Images for Faster Website Loading</h2> 
+        
+        <h3>Choose the right image format</h3> 
+        <p>Before compressing images, it’s important to choose the correct format:</p>
+        <ul>
+            <li><strong>Use JPEG</strong> for photographs and complex color images.</li>
+            <li><strong>Use PNG</strong> for images requiring transparency or crisp text.</li>
+            <li><strong>Use WebP</strong> for optimal compression and overall web performance.</li>
+        </ul>
+        <p>Choosing the right format ensures that compression techniques are effective without unnecessary quality loss.</p>
+
+        <h3>Resize images before uploading</h3> 
+        <p>One of the most overlooked optimization techniques is resizing images to the correct dimensions. Uploading a 4000px-wide image when it will only be displayed at 800px wastes bandwidth and slows down your website. Always scale images to the maximum display size required by your website design.</p>
+
+        <h3>Use compression tools effectively</h3> 
+        <p>Image compression tools reduce file size by removing unnecessary data. There are two types of compression:</p>
+        <ul>
+            <li><strong>Lossy compression:</strong> Reduces file size by permanently removing some image data. Ideal for web use.</li>
+            <li><strong>Lossless compression:</strong> Reduces file size without losing image quality. Best for professional graphics.</li>
+        </ul>
+
+        <h3>Adjust compression quality settings</h3> 
+        <p>Most image optimization tools allow you to control compression quality using a slider. A value between 70% and 85% usually provides the best balance between image clarity and file size.</p>
+
+        <h3>Use modern formats like WebP and AVIF</h3> 
+        <p>While WebP is widely supported, newer formats like AVIF offer even better compression in some cases. However, WebP remains the most stable and widely compatible modern format across all browsers.</p>
+
+        <h3>Enable lazy loading for images</h3> 
+        <p>Lazy loading is a technique where images are only loaded when they appear in the user’s viewport. This reduces initial page load time and improves perceived performance.</p>
+
+        <h3>Conclusion</h3>
+        <p>Converting images to WebP and properly compressing them is one of the most effective ways to improve website performance. It reduces file sizes, speeds up loading times, enhances mobile experience, and contributes positively to SEO rankings. By combining modern formats like WebP with smart compression techniques, developers can build faster, more efficient, and more user-friendly websites.</p>
+    </article>
+
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const qualitySlider = document.getElementById('quality');
+    const qualityVal = document.getElementById('qualityVal');
+
+    let convertedImages = [];
+
+    qualitySlider.addEventListener('input', () => {
+        qualityVal.textContent = qualitySlider.value;
+    });
+
+    fileInput.addEventListener('change', () => {
+        preview.innerHTML = "";
+        convertedImages = [];
+
+        Array.from(fileInput.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const div = document.createElement('div');
+                div.className = "card";
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="preview">
+                    <p>${file.name}</p>
+                    <p style="color:#f59e0b;">Status: Ready</p>
+                `;
+                preview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    function convertImages() {
+        const files = fileInput.files;
+        if (!files.length) return alert("Please select images first!");
+
+        preview.innerHTML = "";
+        convertedImages = [];
+
+        Array.from(files).forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    canvas.toBlob(blob => {
+                        const webpURL = URL.createObjectURL(blob);
+                        const fileName = file.name.replace(/\.(png|jpg|jpeg)$/i, "") + ".webp";
+
+                        convertedImages.push({ blob, fileName });
+
+                        const card = document.createElement('div');
+                        card.className = "card";
+
+                        card.innerHTML = `
+                            <img src="${webpURL}" alt="converted">
+                            <p>${fileName}</p>
+                            <p style="color:#10b981;">Size: ${(blob.size / 1024).toFixed(1)} KB</p>
+                            <div class="actions">
+                                <button class="btn-download" onclick="downloadSingle(${convertedImages.length - 1})">⬇️ Download</button>
+                            </div>
+                        `;
+
+                        preview.appendChild(card);
+
+                    }, "image/webp", parseFloat(qualitySlider.value));
+                };
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function downloadSingle(index) {
+        const item = convertedImages[index];
+        saveAs(item.blob, item.fileName);
+    }
+
+    function downloadAllZip() {
+        if (!convertedImages.length) return alert("No converted images yet! Please click Convert first.");
+
+        const zip = new JSZip();
+        const folder = zip.folder("webp-images");
+
+        convertedImages.forEach(img => {
+            folder.file(img.fileName, img.blob);
+        });
+
+        zip.generateAsync({ type: "blob" }).then(content => {
+            saveAs(content, "compressed-webp-images.zip");
+        });
+    }
+
+    function clearAll() {
+        fileInput.value = "";
+        preview.innerHTML = "";
+        convertedImages = [];
+    }
+</script>
+
+</body>
+</html>
